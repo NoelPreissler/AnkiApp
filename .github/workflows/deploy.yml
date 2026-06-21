@@ -1,0 +1,41 @@
+name: React App Deployment
+
+# Die Pipeline startet jedes Mal, wenn du auf den "main"-Branch pushst
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Quellcode von GitHub auschecken
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # 2. Node.js installieren, um React zu bauen
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-node-version: '20' # Oder deine genutzte Node-Version
+
+      # 3. Projektabhängigkeiten installieren
+      - name: Install Dependencies
+        run: npm install
+
+      # 4. Das produktionsbereite Build erstellen (erzeugt den "dist" oder "build" Ordner)
+      - name: Build React App
+        run: npm run build
+
+      # 5. Die fertigen Build-Dateien auf deinen Ubuntu-Server übertragen
+      - name: Deploy to Server via SSH
+        uses: easingthemes/ssh-deploy@main
+        with:
+          SSH_PRIVATE_KEY: ${{ secrets.SERVER_SSH_KEY }}
+          ARGS: "-rlgoDzlkpXt --delete" # Synchronisiert sauber und löscht alte Dateien
+          REMOTE_HOST: ${{ secrets.SERVER_HOST }}
+          REMOTE_USER: ${{ secrets.SERVER_USER }}
+          SOURCE: "dist/" # Bei älteren React-Apps evtl. "build/" – schau nach, was npm run build bei dir erzeugt!
+          TARGET: "/var/www/vokabel-app" # Der Pfad auf deinem Ubuntu-Server, wo deine App leben soll
