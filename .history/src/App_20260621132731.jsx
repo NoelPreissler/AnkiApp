@@ -102,7 +102,7 @@ export default function App() {
       {!quizStarted ? (
         /* SETUP VIEW */
         <div style={styles.container}>
-          <h1 style={styles.title}>Anki Flashcards</h1>
+          <h1 style={styles.title}>Anki Flashcards (React)</h1>
           <div style={styles.selectBox}>
             <label style={{ fontWeight: 'bold', color: '#475569', display: 'block', marginBottom: '8px' }}>
               Wähle eine importierte JSON-Datei:

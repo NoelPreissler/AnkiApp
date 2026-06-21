@@ -9,7 +9,7 @@ export default function VokabelGenerator() {
     setResponse('');
 
     try {
-      const res = await fetch('http://193.197.231.68:11434/api/generate', {
+      const res = await fetch('http://localhost:11434/api/generate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
