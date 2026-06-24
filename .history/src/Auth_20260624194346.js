@@ -12,7 +12,7 @@ export default function Auth({ onLoginSuccess }) {
     const endpoint = isLogin ? '/api/login' : '/api/register';
     
     try {
-      const response = await fetch(`http://localhost:5000${endpoint}`, {
+      const response = await fetch(`http://193.197.231.68:5000${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ benutzername: username })

@@ -47,7 +47,7 @@ export default function App() {
   // Wenn ein User eingeloggt ist, laden wir optional seine DB-Vokabeln als eigene Lektion
   useEffect(() => {
     if (user) {
-      fetch(`http://localhost:5000/api/vokabeln/${user.id}`)
+      fetch(`http://193.197.231.68:5000/api/vokabeln/${user.id}`)
         .then(res => res.json())
         .then(data => {
           if (data.length > 0) {

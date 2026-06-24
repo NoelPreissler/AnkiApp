@@ -16,7 +16,7 @@ export default function Upload({ user }) {
         return;
       }
 
-      const response = await fetch('http://localhost:5000/api/vokabeln/upload', {
+      const response = await fetch('http://193.197.231.68:5000/api/vokabeln/upload', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ benutzer_id: user.id, vokabeln: parsedData })
