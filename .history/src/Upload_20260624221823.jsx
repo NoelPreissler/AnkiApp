@@ -8,57 +8,29 @@ export default function Upload({ user }) {
   const [selectedSatzName, setSelectedSatzName] = useState('');
   const [newSatzName, setNewSatzName] = useState('');
 
-  // Funktion, um die Sätze aus der DB zu laden
-  const loadSaetze = () => {
-    if (user) {
+  // Wenn der Modus auf 'existing' wechselt, laden wir die Sätze des Nutzers aus der DB
+  useEffect(() => {
+    if (user && uploadMode === 'existing') {
+      console.log("Wir fetchen sätze,",user.id);
       fetch(`http://193.197.231.68:5000/api/saetze/${user.id}`)
         .then(res => res.json())
         .then(data => {
+          console.log("Data = ",data);
           setExistingSaetze(data);
           if (data.length > 0) {
-            setSelectedSatzName(data[0].name);
-          } else {
-            setSelectedSatzName('');
+            setSelectedSatzName(data[0].name); // Standardmäßig den ersten Satz wählen
           }
         })
         .catch(err => console.error("Fehler beim Laden der Sätze:", err));
     }
-  };
-
-  useEffect(() => {
-    if (uploadMode === 'existing') {
-      loadSaetze();
-    }
   }, [user, uploadMode]);
 
-  // FUNKTION ZUM LÖSCHEN EINES SATZES
-  const handleDeleteSatz = async (id, name) => {
-    if (!window.confirm(`Möchtest du die Lektion "${name}" wirklich unwiderruflich löschen? Alle enthaltenen Vokabeln gehen verloren.`)) {
-      return;
-    }
-
-    try {
-      const response = await fetch(`http://193.197.231.68:5000/api/saetze/${id}`, {
-        method: 'DELETE',
-      });
-
-      if (response.ok) {
-        setStatus(`🗑️ Lektion "${name}" wurde gelöscht.`);
-        loadSaetze(); // Liste neu laden
-      } else {
-        const err = await response.json();
-        setStatus(`Fehler beim Löschen: ${err.error}`);
-      }
-    } catch (e) {
-      setStatus('Netzwerkfehler beim Löschen der Lektion.');
-    }
-  };
-
   if (!user) {
-    return <div style={{ textAlign: 'center', marginTop: '40px', color: '#e74c3c', fontWeight: 'bold' }}>⚠️ Bitte logge dich zuerst ein, um Vokabeln zu verwalten.</div>;
+    return <div style={{ textAlign: 'center', marginTop: '40px', color: '#e74c3c', fontWeight: 'bold' }}>⚠️ Bitte logge dich zuerst ein, um Vokabeln hochzuladen.</div>;
   }
 
   const handleUpload = async () => {
+    // Welcher Name soll genutzt werden?
     const satzName = uploadMode === 'new' ? newSatzName : selectedSatzName;
 
     if (!satzName.trim()) {
@@ -87,6 +59,7 @@ export default function Upload({ user }) {
         setStatus(`🎉 Vokabeln erfolgreich im Satz "${satzName}" gespeichert!`);
         setJsonText('');
         setNewSatzName('');
+        // Falls ein neuer Satz erstellt wurde, triggern wir ein kurzes Neuladen der Liste für das Dropdown
         if (uploadMode === 'new') setUploadMode('existing');
       } else {
         const err = await response.json();
@@ -99,21 +72,31 @@ export default function Upload({ user }) {
 
   return (
     <div style={styles.container}>
-      <h2>Eigene Vokabeln verwalten & hochladen</h2>
+      <h2>Eigene Vokabeln hochladen (JSON)</h2>
       
       {/* Modus-Auswahl */}
       <div style={styles.radioGroup}>
         <label style={styles.radioLabel}>
-          <input type="radio" value="new" checked={uploadMode === 'new'} onChange={() => setUploadMode('new')} />
+          <input 
+            type="radio" 
+            value="new" 
+            checked={uploadMode === 'new'} 
+            onChange={() => setUploadMode('new')} 
+          />
           Neuen Vokabelsatz erstellen
         </label>
         <label style={styles.radioLabel}>
-          <input type="radio" value="existing" checked={uploadMode === 'existing'} onChange={() => setUploadMode('existing')} />
-          An vorhandenen Satz anfügen / Löschen
+          <input 
+            type="radio" 
+            value="existing" 
+            checked={uploadMode === 'existing'} 
+            onChange={() => setUploadMode('existing')} 
+          />
+          An vorhandenen Satz anfügen
         </label>
       </div>
 
-      {/* Dynamisches Namensfeld / Dropdown */}
+      {/* Dynamisches Namensfeld */}
       {uploadMode === 'new' ? (
         <input 
           type="text" 
@@ -123,43 +106,27 @@ export default function Upload({ user }) {
           style={styles.input}
         />
       ) : (
-        <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
-          <select 
-            value={selectedSatzName} 
-            onChange={(e) => setSelectedSatzName(e.target.value)} 
-            style={{ ...styles.select, flex: 1, marginBottom: 0 }}
-          >
-            {existingSaetze.length === 0 ? (
-              <option disabled>Keine Sätze in der Datenbank vorhanden</option>
-            ) : (
-              existingSaetze.map(satz => (
-                <option key={satz.id} value={satz.name}>{satz.name}</option>
-              ))
-            )}
-          </select>
-          
-          {/* Lösch-Button für den aktuell im Dropdown ausgewählten Satz */}
-          {existingSaetze.length > 0 && (
-            <button 
-              onClick={() => {
-                const aktuellerSatz = existingSaetze.find(s => s.name === selectedSatzName);
-                if (aktuellerSatz) handleDeleteSatz(aktuellerSatz.id, aktuellerSatz.name);
-              }} 
-              style={styles.deleteBtn}
-              title="Lektion löschen"
-            >
-              Lektion löschen 🗑️
-            </button>
+        <select 
+          value={selectedSatzName} 
+          onChange={(e) => setSelectedSatzName(e.target.value)} 
+          style={styles.select}
+        >
+          {existingSaetze.length === 0 ? (
+            <option disabled>Keine Sätze in der Datenbank vorhanden</option>
+          ) : (
+            existingSaetze.map(satz => (
+              <option key={satz.id} value={satz.name}>{satz.name}</option>
+            ))
           )}
-        </div>
+        </select>
       )}
 
       <p style={{ fontSize: '14px', color: '#666', marginTop: '15px' }}>
-        Formatbeispiel für den Upload: <code>[{"{"}"vorn": "Apfel", "hinten": "apple"{"}"}]</code>
+        Formatbeispiel: <code>[{"{"}"vorn": "Apfel", "hinten": "apple"{"}"}]</code>
       </p>
       
       <textarea 
-        rows="6" 
+        rows="8" 
         placeholder='Füge dein JSON hier ein...' 
         value={jsonText} 
         onChange={(e) => setJsonText(e.target.value)}
@@ -177,8 +144,7 @@ const styles = {
   radioGroup: { display: 'flex', gap: '20px', marginBottom: '15px' },
   radioLabel: { display: 'flex', alignItems: 'center', gap: '8px', fontSize: '15px', cursor: 'pointer' },
   input: { width: '100%', padding: '10px', boxSizing: 'border-box', borderRadius: '4px', border: '1px solid #cbd5e1', marginBottom: '10px' },
-  select: { width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #cbd5e1', backgroundColor: '#fff' },
-  deleteBtn: { padding: '10px 15px', backgroundColor: '#e74c3c', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' },
+  select: { width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #cbd5e1', marginBottom: '10px', backgroundColor: '#fff' },
   textarea: { width: '100%', boxSizing: 'border-box', padding: '10px', fontFamily: 'monospace', borderRadius: '4px', border: '1px solid #ccc', marginTop: '5px' },
   btn: { width: '100%', padding: '12px', backgroundColor: '#2ecc71', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', marginTop: '10px', fontWeight: 'bold' },
   status: { marginTop: '15px', fontWeight: 'bold', color: '#34495e', textAlign: 'center' }
