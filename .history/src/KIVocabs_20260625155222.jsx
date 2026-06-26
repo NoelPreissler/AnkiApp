@@ -15,30 +15,41 @@ export default function VokabelGenerator() {
     setResponse(''); // Altes Ergebnis leeren
 
     try {
-      const res = await fetch('http://193.197.231.236:11434/api/generate', {
+      const res = await fetch('http://193.197.231.68:11434/api/generate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'qwen2.5:7b', // Dein blitzschnelles Modell
-          prompt: `Du bist ein Daten-Parser. Deine einzige Aufgabe ist es, eine Liste von Vokabeln, in ein JSON-Format zu verwandeln.
+          model: 'qwen2.5:0.5b', // Dein blitzschnelles Modell
+          prompt: `Du bist ein Daten-Parser. Deine einzige Aufgabe ist es, eine Liste von Vokabeln, die der Benutzer eingibt, in ein valides JSON-Array zu verwandeln.
         
 Nutze exakt dieses Format: [{"vorn": "Wort1", "hinten": "Wort2"}]
+
+Beispiel 1:
+Eingabe: Hund = köpek, Katze - kedi
+Ausgabe: [{"vorn": "Hund", "hinten": "köpek"}, {"vorn": "Katze", "hinten": "kedi"}]
+
+Beispiel 2:
+Eingabe:
+Apfel: apple
+Brot: ekmek
+Ausgabe: [{"vorn": "Apfel", "hinten": "apple"}, {"vorn": "Brot", "hinten": "ekmek"}]
+
 Hier ist die echte Eingabe des Benutzers, konvertiere sie jetzt:
 ${inputText}`, // Nutzt den Text aus der Textarea
-
+          
           format: 'json', // Zwingt Ollama, nur JSON auszugeben
           stream: false,  // Wartet auf die vollständige Antwort
         }),
       });
 
       const data = await res.json();
-
+      
       // Das rohe JSON-String-Ergebnis der KI lesbar formatiert (mit Einrückungen) anzeigen
       // data.response ist bereits ein valider JSON-String, wir machen ihn nur "schön"
       const schoenesJson = JSON.stringify(JSON.parse(data.response), null, 2);
-
+      
       setResponse(schoenesJson);
 
     } catch (error) {
@@ -52,7 +63,7 @@ ${inputText}`, // Nutzt den Text aus der Textarea
   return (
     <div style={{ padding: '20px', fontFamily: 'sans-serif', textAlign: 'left' }}>
       <h2>Jura Vokabel-Generator (Local KI)</h2>
-
+      
       <p style={{ fontSize: '14px', color: '#666' }}>
         Gib deine Vokabeln flexibel ein (z.B. <code>Hund = köpek</code> oder untereinander):
       </p>
@@ -66,8 +77,8 @@ ${inputText}`, // Nutzt den Text aus der Textarea
         disabled={loading}
       />
 
-      <button
-        onClick={konvertiereInJson}
+      <button 
+        onClick={konvertiereInJson} 
         disabled={loading}
         style={{ width: '100%', padding: '12px', backgroundColor: '#4a90e2', color: 'white', border: 'none', borderRadius: '5px', fontWeight: 'bold', cursor: loading ? 'not-allowed' : 'pointer' }}
       >

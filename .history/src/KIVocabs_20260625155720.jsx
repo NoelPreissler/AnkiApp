@@ -15,13 +15,13 @@ export default function VokabelGenerator() {
     setResponse(''); // Altes Ergebnis leeren
 
     try {
-      const res = await fetch('http://193.197.231.236:11434/api/generate', {
+      const res = await fetch('http://193.197.231.68:11434/api/generate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'qwen2.5:7b', // Dein blitzschnelles Modell
+          model: 'qwen2.5:0.5b', // Dein blitzschnelles Modell
           prompt: `Du bist ein Daten-Parser. Deine einzige Aufgabe ist es, eine Liste von Vokabeln, in ein JSON-Format zu verwandeln.
         
 Nutze exakt dieses Format: [{"vorn": "Wort1", "hinten": "Wort2"}]
